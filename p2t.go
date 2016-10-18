@@ -28,7 +28,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package p2t
+package poly2tri
 
 /**
  * Sweep-line, Constrained Delauney Triangulation (CDT) See: Domiter, V. and
@@ -56,14 +56,7 @@ func Triangulate() TriArray {
 	} else {
 		panic(fmt.Sprintf("ERROR: p2t uninitialized"))
 	}
-	// Copy triangles from list to slice
-	var triangles = make(TriArray, tcx.triangles.Len())
-	i := 0
-	for e := tcx.triangles.Front(); e != nil; e = e.Next() {
-		triangles[i] = e.Value.(*Triangle)
-		i++
-	}
-	return triangles
+	return tcx.triangles
 }
 
 func AddHole(polyline PointArray) {
@@ -86,12 +79,7 @@ func AddPoint(p *Point) {
 func Mesh() TriArray {
 	if tcx != nil {
 		// Convert from Vector to slice for convenience
-		n := tcx.tmap.Len()
-		var triangles = make(TriArray, n)
-		for e, i := tcx.tmap.Front(), 0; e != nil; e, i = e.Next(), i+1 {
-			triangles[i] = e.Value.(*Triangle)
-		}
-		return triangles
+		return tcx.tmap
 	}
 	panic(fmt.Sprintf("ERROR: p2t uninitialized"))
 }

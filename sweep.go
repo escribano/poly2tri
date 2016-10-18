@@ -28,11 +28,11 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package p2t
+package poly2tri
 
 import (
-	"math"
 	"fmt"
+	"math"
 )
 
 // Triangulate simple polygon with holes
@@ -50,8 +50,8 @@ func sweepPoints(tcx *SweepContext) {
 	for i := 1; i < len(tcx.points); i++ {
 		var point = tcx.points[i]
 		var node = pointEvent(tcx, point)
-		for i := 0; i < point.edge_list.Len(); i++ {
-			initSweepEdgeEvent(tcx, point.edge_list[i].(*Edge), node)
+		for i := 0; i < len(point.edge_list); i++ {
+			initSweepEdgeEvent(tcx, point.edge_list[i], node)
 		}
 	}
 }
@@ -90,7 +90,8 @@ func newFrontTriangle(tcx *SweepContext, point *Point, node *Node) *Node {
 	triangle.init(point, node.point, node.next.point)
 
 	triangle.markNeighbor2(node.triangle)
-	triangle.eref = tcx.tmap.PushBack(triangle)
+	tcx.tmap = append(tcx.tmap, triangle)
+	triangle.eref = len(tcx.tmap) - 1
 
 	new_node := &Node{point: point, value: point.X}
 	//s.nodes.Push(new_node)
@@ -395,7 +396,8 @@ func fill(tcx *SweepContext, node *Node) {
 	t.markNeighbor2(node.prev.triangle)
 	t.markNeighbor2(node.triangle)
 
-	t.eref = tcx.tmap.PushBack(t)
+	tcx.tmap = append(tcx.tmap, t)
+	t.eref = len(tcx.tmap) - 1
 
 	// Update the advancing front
 	node.prev.next = node.next

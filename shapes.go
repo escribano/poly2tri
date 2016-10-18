@@ -28,18 +28,16 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package p2t
+package poly2tri
 
 import (
 	"fmt"
-	"container/vector"
-	"container/list"
 	"sort"
 )
 
 type Point struct {
 	X, Y      float64
-	edge_list vector.Vector
+	edge_list []*Edge
 }
 
 // PointArray attaches the methods of Interface to []*Point, sorting in increasing order.
@@ -79,7 +77,7 @@ type Triangle struct {
 	// Flags to determine if an edge is a Delauney edge
 	delaunay_edge [3]bool
 
-	eref *list.Element
+	eref int
 }
 
 type TriArray []*Triangle
@@ -104,7 +102,7 @@ func (e *Edge) init(p1, p2 *Point) {
 			panic(fmt.Sprintf("repeat Point"))
 		}
 	}
-	e.q.edge_list.Push(e)
+	e.q.edge_list = append(e.q.edge_list, e)
 }
 
 func (t *Triangle) containsPoint(p *Point) bool {

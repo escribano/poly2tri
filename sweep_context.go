@@ -29,12 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package p2t
-
-import (
-	"container/vector"
-	"container/list"
-)
+package poly2tri
 
 // TODO: make everything in here private
 
@@ -45,11 +40,11 @@ const kAlpha = 0.3
 type SweepContext struct {
 	basin      *Basin
 	edge_event *EdgeEvent
-	edge_list  *vector.Vector
+	edge_list  []*Edge
 
-	triangles *list.List
+	triangles []*Triangle
 	points    PointArray
-	tmap      *list.List
+	tmap      []*Triangle
 
 	// Advancing front
 	front *AdvancingFront
@@ -79,9 +74,6 @@ func (b *Basin) Clear() {
 }
 
 func (s *SweepContext) init(polyline []*Point) {
-	s.triangles = list.New()
-	s.edge_list = new(vector.Vector)
-	s.tmap = list.New()
 	s.basin = new(Basin)
 	s.edge_event = new(EdgeEvent)
 	s.points = polyline
@@ -136,7 +128,7 @@ func (s *SweepContext) initEdges(polyline []*Point) {
 		var p2 = polyline[j]
 		var e = new(Edge)
 		e.init(p1, p2)
-		s.edge_list.Push(e)
+		s.edge_list = append(s.edge_list, e)
 	}
 }
 
@@ -168,7 +160,8 @@ func (s *SweepContext) createAdvancingFront() {
 	t := new(Triangle)
 	t.init(s.points[0], s.tail, s.head)
 
-	t.eref = s.tmap.PushBack(t)
+	s.tmap = append(s.tmap, t)
+	t.eref = len(s.tmap) - 1
 
 	s.af_head = &Node{point: t.Point[1], triangle: t, value: t.Point[1].X}
 	s.af_middle = &Node{point: t.Point[0], triangle: t, value: t.Point[0].X}
@@ -200,25 +193,13 @@ func (s *SweepContext) mapTriangleToNodes(t *Triangle) {
 }
 
 func (s *SweepContext) RemoveFromMap(t *Triangle) {
-	s.tmap.Remove(t.eref)
+	s.tmap = append(s.tmap[:t.eref], s.tmap[t.eref+1:]...)
 }
 
 func (s *SweepContext) meshClean(t *Triangle) {
 	if t != nil && !t.interior {
 		t.interior = true
-		/*
-			var n = len(s.triangles)
-			if n < cap(s.triangles) {
-				s.triangles = s.triangles[0 : n+1]
-			} else {
-				// Resize the array and double it
-				tmp := make(TriArray, n*2)
-				copy(tmp, s.triangles)
-				s.triangles = tmp
-			}
-			s.triangles[n] = t
-		*/
-		s.triangles.PushBack(t)
+		s.triangles = append(s.triangles, t)
 		for i := 0; i < 3; i++ {
 			if !t.constrained_edge[i] {
 				s.meshClean(t.neighbor[i])
