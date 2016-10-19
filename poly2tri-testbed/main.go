@@ -31,16 +31,16 @@
 package main
 
 import (
-	"fmt"
-	"os"
 	"flag"
-	"p2t"
+	"fmt"
+	"github.com/eyrie-io/poly2tri"
 	"gl"
 	"gl/glu"
-	"sdl"
-	"strings"
 	"io/ioutil"
+	"os"
+	"sdl"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -105,13 +105,13 @@ func main() {
 	top = Height / float64(*zoom)
 
 	last_time := time.Nanoseconds()
-	
+
 	p2t.Init(polyline)
 	var triangles p2t.TriArray = p2t.Triangulate()
 
-	dt := time.Nanoseconds() - last_time	
+	dt := time.Nanoseconds() - last_time
 	fmt.Printf("Elapsed time : %f ms\n", float64(dt)*1e-6)
-	
+
 	//var mesh p2t.TriArray = p2t.Mesh()
 
 	sdl.Init(sdl.INIT_VIDEO)

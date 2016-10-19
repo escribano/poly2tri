@@ -28,11 +28,11 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package p2t
+package poly2tri
 
 import (
-	"math"
 	"fmt"
+	"math"
 )
 
 // Triangulate simple polygon with holes
@@ -50,8 +50,8 @@ func sweepPoints(tcx *SweepContext) {
 	for i := 1; i < len(tcx.points); i++ {
 		var point = tcx.points[i]
 		var node = pointEvent(tcx, point)
-		for i := 0; i < point.edge_list.Len(); i++ {
-			initSweepEdgeEvent(tcx, point.edge_list[i].(*Edge), node)
+		for j := 0; j < len(point.edge_list); j++ {
+			initSweepEdgeEvent(tcx, point.edge_list[j], node)
 		}
 	}
 }
@@ -90,7 +90,7 @@ func newFrontTriangle(tcx *SweepContext, point *Point, node *Node) *Node {
 	triangle.init(point, node.point, node.next.point)
 
 	triangle.markNeighbor2(node.triangle)
-	triangle.eref = tcx.tmap.PushBack(triangle)
+	tcx.tmap = append(tcx.tmap, triangle)
 
 	new_node := &Node{point: point, value: point.X}
 	//s.nodes.Push(new_node)
@@ -326,33 +326,37 @@ func sweepEdgeEvent(tcx *SweepContext, ep, eq *Point, triangle *Triangle, point 
 	var p1 *Point = triangle.pointCCW(point)
 	var o1 = orient2d(eq, p1, ep)
 	if o1 == COLLINEAR {
-		if triangle.containsPoints(eq, p1) {
-			triangle.markConstrainedEdge3(eq, p1)
-			// We are modifying the constraint maybe it would be better to
-			// not change the given constraint and just keep a variable for the new constraint
-			tcx.edge_event.constrained_edge.q = p1
-			triangle = triangle.neighborAcross(point)
-			sweepEdgeEvent(tcx, ep, p1, triangle, p1)
-		} else {
-			panic(fmt.Sprintf("EdgeEvent - collinear points not supported"))
-		}
-		return
+		/*
+			if triangle.containsPoints(eq, p1) {
+				triangle.markConstrainedEdge3(eq, p1)
+				// We are modifying the constraint maybe it would be better to
+				// not change the given constraint and just keep a variable for the new constraint
+				tcx.edge_event.constrained_edge.q = p1
+				triangle = triangle.neighborAcross(point)
+				sweepEdgeEvent(tcx, ep, p1, triangle, p1)
+			} else {
+		*/
+		panic(fmt.Sprintf("EdgeEvent - collinear points not supported"))
+		//}
+		//return
 	}
 
 	var p2 = triangle.pointCW(point)
 	var o2 = orient2d(eq, p2, ep)
 	if o2 == COLLINEAR {
-		if triangle.containsPoints(eq, p2) {
-			triangle.markConstrainedEdge3(eq, p2)
-			// We are modifying the constraint maybe it would be better to
-			// not change the given constraint and just keep a variable for the new constraint
-			tcx.edge_event.constrained_edge.q = p2
-			triangle = triangle.neighborAcross(point)
-			sweepEdgeEvent(tcx, ep, p2, triangle, p2)
-		} else {
-			panic(fmt.Sprintf("EdgeEvent - collinear points not supported"))
-		}
-		return
+		/*
+			if triangle.containsPoints(eq, p2) {
+				triangle.markConstrainedEdge3(eq, p2)
+				// We are modifying the constraint maybe it would be better to
+				// not change the given constraint and just keep a variable for the new constraint
+				tcx.edge_event.constrained_edge.q = p2
+				triangle = triangle.neighborAcross(point)
+				sweepEdgeEvent(tcx, ep, p2, triangle, p2)
+			} else {
+		*/
+		panic(fmt.Sprintf("EdgeEvent - collinear points not supported"))
+		//}
+		//return
 	}
 
 	if o1 == o2 {
@@ -373,7 +377,6 @@ func sweepEdgeEvent(tcx *SweepContext, ep, eq *Point, triangle *Triangle, point 
 func isEdgeSideOfTriangle(t *Triangle, ep, eq *Point) bool {
 
 	var index = t.edgeIndex(ep, eq)
-
 	if index != -1 {
 		t.markConstrainedEdge(index)
 		var tn = t.neighbor[index]
@@ -395,7 +398,7 @@ func fill(tcx *SweepContext, node *Node) {
 	t.markNeighbor2(node.prev.triangle)
 	t.markNeighbor2(node.triangle)
 
-	t.eref = tcx.tmap.PushBack(t)
+	tcx.tmap = append(tcx.tmap, t)
 
 	// Update the advancing front
 	node.prev.next = node.next

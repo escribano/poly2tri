@@ -28,7 +28,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package p2t
+package poly2tri
 
 /**
  * Sweep-line, Constrained Delauney Triangulation (CDT) See: Domiter, V. and
@@ -38,60 +38,27 @@ package p2t
  * "FlipScan" Constrained Edge Algorithm invented by Thomas Åhlén, thahlen@gmail.com
  */
 
-import (
-	"fmt"
-)
-
-var tcx *SweepContext
-
-func Init(polyline PointArray) {
-	tcx = new(SweepContext)
+func NewSweepContext(polyline PointArray) *SweepContext {
+	tcx := &SweepContext{}
 	tcx.init(polyline)
+	return tcx
 }
 
 // Returns the contstrained triangles
-func Triangulate() TriArray {
-	if tcx != nil {
-		triangulate(tcx)
-	} else {
-		panic(fmt.Sprintf("ERROR: p2t uninitialized"))
-	}
-	// Copy triangles from list to slice
-	var triangles = make(TriArray, tcx.triangles.Len())
-	i := 0
-	for e := tcx.triangles.Front(); e != nil; e = e.Next() {
-		triangles[i] = e.Value.(*Triangle)
-		i++
-	}
-	return triangles
+func (tcx *SweepContext) Triangulate() TriArray {
+	triangulate(tcx)
+	return tcx.triangles
 }
 
-func AddHole(polyline PointArray) {
-	if tcx != nil {
-		tcx.addHole(polyline)
-	} else {
-		panic(fmt.Sprintf("ERROR: p2t uninitialized"))
-	}
+func (tcx *SweepContext) AddHole(polyline PointArray) {
+	tcx.addHole(polyline)
 }
 
-func AddPoint(p *Point) {
-	if tcx != nil {
-		tcx.addPoint(p)
-	} else {
-		panic(fmt.Sprintf("ERROR: p2t uninitialized"))
-	}
+func (tcx *SweepContext) AddPoint(p *Point) {
+	tcx.addPoint(p)
 }
 
 // Returns the entire triangle mesh for debugging purposes
-func Mesh() TriArray {
-	if tcx != nil {
-		// Convert from Vector to slice for convenience
-		n := tcx.tmap.Len()
-		var triangles = make(TriArray, n)
-		for e, i := tcx.tmap.Front(), 0; e != nil; e, i = e.Next(), i+1 {
-			triangles[i] = e.Value.(*Triangle)
-		}
-		return triangles
-	}
-	panic(fmt.Sprintf("ERROR: p2t uninitialized"))
+func (tcx *SweepContext) Mesh() TriArray {
+	return tcx.tmap
 }
