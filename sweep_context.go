@@ -97,7 +97,7 @@ func (s *SweepContext) initTriangulation() {
 			xmin = p.X
 		}
 		if p.Y > ymax {
-			ymax = p.X
+			ymax = p.Y
 		}
 		if p.Y < ymin {
 			ymin = p.Y
@@ -135,17 +135,13 @@ func (s *SweepContext) initEdges(polyline []*Point) {
 func (s *SweepContext) addHole(polyline []*Point) {
 	s.initEdges(polyline)
 	n := len(polyline)
-	n2 := len(s.points)
-	s.points = s.points[0 : n2+n]
 	for i := 0; i < n; i++ {
-		s.points[n2+i+1] = polyline[i]
+		s.points = append(s.points, polyline[i])
 	}
 }
 
 func (s *SweepContext) addPoint(point *Point) {
-	n := len(s.points)
-	s.points = s.points[0 : n+1]
-	s.points[n+1] = point
+	s.points = append(s.points, point)
 }
 
 func (s *SweepContext) locateNode(point *Point) *Node {
@@ -161,7 +157,6 @@ func (s *SweepContext) createAdvancingFront() {
 	t.init(s.points[0], s.tail, s.head)
 
 	s.tmap = append(s.tmap, t)
-	t.eref = len(s.tmap) - 1
 
 	s.af_head = &Node{point: t.Point[1], triangle: t, value: t.Point[1].X}
 	s.af_middle = &Node{point: t.Point[0], triangle: t, value: t.Point[0].X}
@@ -177,10 +172,6 @@ func (s *SweepContext) createAdvancingFront() {
 	s.af_tail.prev = s.af_middle
 }
 
-func (s *SweepContext) RemoveNode(node *Node) {
-	node = nil
-}
-
 func (s *SweepContext) mapTriangleToNodes(t *Triangle) {
 	for i := 0; i < 3; i++ {
 		if t.neighbor[i] == nil {
@@ -190,10 +181,6 @@ func (s *SweepContext) mapTriangleToNodes(t *Triangle) {
 			}
 		}
 	}
-}
-
-func (s *SweepContext) RemoveFromMap(t *Triangle) {
-	s.tmap = append(s.tmap[:t.eref], s.tmap[t.eref+1:]...)
 }
 
 func (s *SweepContext) meshClean(t *Triangle) {

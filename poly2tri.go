@@ -38,48 +38,27 @@ package poly2tri
  * "FlipScan" Constrained Edge Algorithm invented by Thomas Åhlén, thahlen@gmail.com
  */
 
-import (
-	"fmt"
-)
-
-var tcx *SweepContext
-
-func Init(polyline PointArray) {
-	tcx = new(SweepContext)
+func NewSweepContext(polyline PointArray) *SweepContext {
+	tcx := &SweepContext{}
 	tcx.init(polyline)
+	return tcx
 }
 
 // Returns the contstrained triangles
-func Triangulate() TriArray {
-	if tcx != nil {
-		triangulate(tcx)
-	} else {
-		panic(fmt.Sprintf("ERROR: p2t uninitialized"))
-	}
+func (tcx *SweepContext) Triangulate() TriArray {
+	triangulate(tcx)
 	return tcx.triangles
 }
 
-func AddHole(polyline PointArray) {
-	if tcx != nil {
-		tcx.addHole(polyline)
-	} else {
-		panic(fmt.Sprintf("ERROR: p2t uninitialized"))
-	}
+func (tcx *SweepContext) AddHole(polyline PointArray) {
+	tcx.addHole(polyline)
 }
 
-func AddPoint(p *Point) {
-	if tcx != nil {
-		tcx.addPoint(p)
-	} else {
-		panic(fmt.Sprintf("ERROR: p2t uninitialized"))
-	}
+func (tcx *SweepContext) AddPoint(p *Point) {
+	tcx.addPoint(p)
 }
 
 // Returns the entire triangle mesh for debugging purposes
-func Mesh() TriArray {
-	if tcx != nil {
-		// Convert from Vector to slice for convenience
-		return tcx.tmap
-	}
-	panic(fmt.Sprintf("ERROR: p2t uninitialized"))
+func (tcx *SweepContext) Mesh() TriArray {
+	return tcx.tmap
 }

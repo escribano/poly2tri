@@ -76,8 +76,6 @@ type Triangle struct {
 	constrained_edge [3]bool
 	// Flags to determine if an edge is a Delauney edge
 	delaunay_edge [3]bool
-
-	eref int
 }
 
 type TriArray []*Triangle
